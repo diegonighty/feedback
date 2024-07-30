@@ -6,5 +6,5 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 @ConfigSerializable
 public interface Feedback {
-    void sendFeedback(Audience audience, TagResolver resolver);
+    void sendFeedback(Audience audience, TagResolver... resolver);
 }
