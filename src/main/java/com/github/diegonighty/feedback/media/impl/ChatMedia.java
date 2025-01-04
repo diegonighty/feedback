@@ -6,19 +6,24 @@ import com.github.diegonighty.feedback.media.MediaType;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializer;
 
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Objects;
 
-public record ChatMedia(String message) implements FeedbackMedia {
+public record ChatMedia(List<String> messages) implements FeedbackMedia {
+    public ChatMedia(String message) {
+        this(List.of(message));
+    }
 
     @Override
     public void sendMedia(final Audience audience, final TagResolver... resolvers) {
-        audience.sendMessage(ComponentUtils.miniMessage(message, resolvers));
+        messages.forEach(message -> audience.sendMessage(ComponentUtils.miniMessage(message, resolvers)));
     }
 
     @Override
@@ -28,8 +33,13 @@ public record ChatMedia(String message) implements FeedbackMedia {
 
     public static class ChatMediaSerializer implements TypeSerializer<FeedbackMedia> {
         @Override
-        public FeedbackMedia deserialize(Type type, ConfigurationNode node) throws SerializationException {
-            return new ChatMedia(Objects.requireNonNull(node.node("message").getString()));
+        public FeedbackMedia deserialize(@NotNull Type type, ConfigurationNode node) throws SerializationException {
+            final var msgNode = node.node("message");
+            if (msgNode.isList()) {
+                return new ChatMedia(msgNode.getList(String.class));
+            }
+
+            return new ChatMedia(msgNode.getString(msgNode.path().toString()));
         }
 
         @Override
@@ -39,7 +49,13 @@ public record ChatMedia(String message) implements FeedbackMedia {
             }
 
             node.node("type").set(MediaType.CHAT.name().toLowerCase());
-            node.node("message").set(media.message());
+
+            if (media.messages().size() == 1) {
+                node.node("message").set(media.messages().get(0));
+                return;
+            }
+
+            node.node("message").setList(String.class, media.messages());
         }
     }
 }

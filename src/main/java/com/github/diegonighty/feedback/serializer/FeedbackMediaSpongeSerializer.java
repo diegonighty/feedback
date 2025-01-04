@@ -27,6 +27,10 @@ public class FeedbackMediaSpongeSerializer implements TypeSerializer<FeedbackMed
     public FeedbackMedia deserialize(Type type, ConfigurationNode node) throws SerializationException {
         final var typeNode = node.node("type");
         if (typeNode.empty() || typeNode.virtual()) {
+            if (node.isList()) {
+                return new ChatMedia(node.getList(String.class));
+            }
+
             return new ChatMedia(node.getString(node.path().toString()));
         }
 
@@ -43,7 +47,12 @@ public class FeedbackMediaSpongeSerializer implements TypeSerializer<FeedbackMed
         final var mediaType = obj.type();
         final var parent = node.parent();
         if (obj instanceof ChatMedia media && (parent == null || !parent.isList())) { // simple format - node: "message"
-            node.set(media.message());
+            if (media.messages().size() == 1) {
+                node.set(media.messages().get(0));
+                return;
+            }
+
+            node.setList(String.class, media.messages());
             return;
         }
 
