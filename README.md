@@ -44,9 +44,9 @@ title-feedback:
   type: "TITLE"
   title: "<red>Feedback Title"
   sub-title: "<yellow>Feedback Subtitle" # Optional
-  fadeIn: 1 # Optional (in seconds) default 1
+  fade-in: 1 # Optional (in seconds) default 1
   stay: 3 # Optional (in seconds) default 1
-  fadeOut: 1 # Optional (in seconds) default 1
+  fade-out: 1 # Optional (in seconds) default 1
 
 sound-feedback:
   type: "SOUND"
